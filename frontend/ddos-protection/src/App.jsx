@@ -1,66 +1,34 @@
-// eslint-disable-next-line no-unused-vars
-import { useEffect, useState } from 'react'
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import Stats from 'three/examples/jsm/libs/stats.module';
-import './App.css'
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 function App() {
+    const [logs, setLogs] = useState([]);  // State to store logs
 
-  useEffect(() => {
-    const scene = new THREE.Scene();
+    // Fetch logs from the backend when the component mounts
+    useEffect(() => {
+        const fetchLogs = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/api/logs');
+                setLogs(response.data);  // Set the logs in state
+            } catch (error) {
+                console.error('Error fetching logs:', error);
+            }
+        };
+        fetchLogs();
+    }, []);
 
-    const camera  = new THREE.PerspectiveCamera(
-      50,
-      window.innerWidth / window.innerHeight,
-      1,
-      1000
-    )
-    camera.position.z = 96;
-
-    const canvas = document.getElementById('myThreeJsCanvas');
-    const renderer = new THREE.WebGLRenderer({canvas, antialias:true,});
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    ambientLight.castShadow = true;
-    scene.add(ambientLight);
-
-    const spotLight = new THREE.SpotLight(0xffffff, 1);
-    spotLight.castShadow = true;
-    spotLight.position.set(0, 64, 32);
-    scene.add(spotLight);
-
-    const boxGeometry = new THREE.BoxGeometry(16, 16, 16);
-    const boxMaterial = new THREE.MeshNormalMaterial();
-    const boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
-    scene.add(boxMesh);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-
-    const stats = Stats();
-    document.body.appendChild(stats.dom);
-
-    const animate = () => {
-      stats.update();
-      controls.update();
-      // boxMesh.rotation.x += 0.01;
-      // boxMesh.rotation.y += 0.01;
-      renderer.render(scene, camera);
-      window.requestAnimationFrame(animate);
-    };
-
-    animate();
-  }, []);
-
-  return (
-    <>
-      <div className='App'>
-        <canvas id='myThreeJsCanvas'/>
-      </div>
-    </>
-  )
+    return (
+        <div>
+            <h1>DDoS Protection Logs</h1>
+            <ul>
+                {logs.map(log => (
+                    <li key={log._id}>
+                        {log.ipAddress} - {new Date(log.requestTime).toLocaleString()} - {log.requestPath}
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
 }
 
-export default App
+export default App;
