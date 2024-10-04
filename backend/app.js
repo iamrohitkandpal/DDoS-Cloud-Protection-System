@@ -3,7 +3,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDb from './utils/database.js';
 import bodyParser from "body-parser";
-
 dotenv.config({});
 
 const app = express();
@@ -23,6 +22,23 @@ app.get("/", (req, res) => {
         message: "Backend Relation"
     })
 })
+
+
+app.post('/api/logs', (req, res) => {
+    const { ipAddress, requestPath } = req.body;
+    const logEntry = new TrafficLog({ ipAddress, requestTime: new Date(), requestPath });
+    
+    logEntry.save()
+        .then(() => res.status(201).send(logEntry))
+        .catch(err => res.status(500).json({ error: 'Failed to log traffic' }));
+});
+
+app.get('/api/logs', (req, res) => {
+    TrafficLog.find()
+        .then(logs => res.status(200).json(logs))
+        .catch(err => res.status(500).json({ error: 'Failed to fetch logs' }));
+});
+
 
 const PORT = 8000;
 app.listen(PORT, ()=>{
