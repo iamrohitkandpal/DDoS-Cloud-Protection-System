@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDb from './utils/database.js';
 import bodyParser from "body-parser";
+import { TrafficLog } from "./models/TrafficLog.js";
 dotenv.config({});
 
 const app = express();
@@ -39,9 +40,33 @@ app.get('/api/logs', (req, res) => {
         .catch(err => res.status(500).json({ error: 'Failed to fetch logs' }));
 });
 
+const ipRequests = {};  // Store IP addresses and request counts
+
+app.post('/api/logs', (req, res) => {
+    const { ipAddress, requestPath } = req.body;
+
+    // Check if this IP has made too many requests
+    const now = new Date().getTime();
+    ipRequests[ipAddress] = ipRequests[ipAddress] || [];
+    ipRequests[ipAddress].push(now);
+
+    // Keep only requests from the last 10 seconds
+    ipRequests[ipAddress] = ipRequests[ipAddress].filter(time => now - time < 10000);
+
+    if (ipRequests[ipAddress].length > 5) {
+        // Block the IP if more than 5 requests in 10 seconds
+        return res.status(429).json({ error: 'Too many requests - possible DDoS attack' });
+    }
+
+    const logEntry = new TrafficLog({ ipAddress, requestTime: new Date(), requestPath });
+    logEntry.save()
+        .then(() => res.status(201).send(logEntry))
+        .catch(err => res.status(500).json({ error: 'Failed to log traffic' }));
+});
+
 
 const PORT = 8000;
 app.listen(PORT, ()=>{
-    connectDb
+    connectDb();
     console.log(`Server Running at ${PORT}`);
 })
