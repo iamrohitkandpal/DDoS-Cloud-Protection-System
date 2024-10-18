@@ -3,8 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDb from "./utils/database.js";
 import bodyParser from "body-parser";
-import logsRoute from "./routes/logs.route.js";
-import logTraffic from "./middleware/logTraffic.js"; // Import the middleware
+import logTraffic from "./middlewares/logTraffic.js"; // Import the middleware
 
 dotenv.config({});
 
@@ -23,8 +22,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use(logTraffic); // Apply the middleware to all routes
-
-app.use("/api/logs", logsRoute);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

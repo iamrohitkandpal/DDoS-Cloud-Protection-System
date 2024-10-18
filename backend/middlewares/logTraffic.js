@@ -15,6 +15,7 @@ const logTraffic = async (req, res, next) => {
       .json({ error: "Access temporarily blocked due to too many requests" });
   }
 
+  console.log(ipAddress);
   // Remove IP from blocked list if block period has expired
   if (blockedIps[ipAddress] && blockedIps[ipAddress] <= now) {
     delete blockedIps[ipAddress];
