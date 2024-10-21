@@ -1,16 +1,4 @@
-import { BotMessageSquare } from "lucide-react";
-import { BatteryCharging } from "lucide-react";
-import { Fingerprint } from "lucide-react";
-import { ShieldHalf } from "lucide-react";
-import { PlugZap } from "lucide-react";
-import { GlobeLock } from "lucide-react";
-
-import user1 from "../assets/profile-pictures/user1.jpg";
-import user2 from "../assets/profile-pictures/user2.jpg";
-import user3 from "../assets/profile-pictures/user3.jpg";
-import user4 from "../assets/profile-pictures/user4.jpg";
-import user5 from "../assets/profile-pictures/user5.jpg";
-import user6 from "../assets/profile-pictures/user6.jpg";
+import { Database, FileClock, LayoutTemplate, Monitor, ShieldEllipsis, Siren } from "lucide-react";
 
 export const navItems = [
   { label: "Features", href: "#" },
@@ -19,104 +7,65 @@ export const navItems = [
   { label: "Testimonials", href: "#" },
 ];
 
-export const testimonials = [
-  {
-    user: "John Doe",
-    company: "Stellar Solutions",
-    image: user1,
-    text: "I am extremely satisfied with the services provided. The team was responsive, professional, and delivered results beyond my expectations.",
-  },
-  {
-    user: "Jane Smith",
-    company: "Blue Horizon Technologies",
-    image: user2,
-    text: "I couldn't be happier with the outcome of our project. The team's creativity and problem-solving skills were instrumental in bringing our vision to life",
-  },
-  {
-    user: "David Johnson",
-    company: "Quantum Innovations",
-    image: user3,
-    text: "Working with this company was a pleasure. Their attention to detail and commitment to excellence are commendable. I would highly recommend them to anyone looking for top-notch service.",
-  },
-  {
-    user: "Ronee Brown",
-    company: "Fusion Dynamics",
-    image: user4,
-    text: "Working with the team at XYZ Company was a game-changer for our project. Their attention to detail and innovative solutions helped us achieve our goals faster than we thought possible. We are grateful for their expertise and professionalism!",
-  },
-  {
-    user: "Michael Wilson",
-    company: "Visionary Creations",
-    image: user5,
-    text: "I am amazed by the level of professionalism and dedication shown by the team. They were able to exceed our expectations and deliver outstanding results.",
-  },
-  {
-    user: "Emily Davis",
-    company: "Synergy Systems",
-    image: user6,
-    text: "The team went above and beyond to ensure our project was a success. Their expertise and dedication are unmatched. I look forward to working with them again in the future.",
-  },
-];
-
 export const features = [
   {
-    icon: <BotMessageSquare />,
-    text: "Drag-and-Drop Interface",
+    icon: <FileClock />,
+    text: "Real-time IP Logging",
     description:
-      "Easily design and arrange your VR environments with a user-friendly drag-and-drop interface.",
+      "Captures the IP addresses of incoming requests in real-time, enabling immediate tracking of potential threats.",
   },
   {
-    icon: <Fingerprint />,
-    text: "Multi-Platform Compatibility",
+    icon: <ShieldEllipsis />,
+    text: "IP Blocking Mechanism",
     description:
-      "Build VR applications that run seamlessly across multiple platforms, including mobile, desktop, and VR headsets.",
+      "Automatically blocks IP addresses that exceed request limits, preventing malicious users from accessing the application for a specified duration.",
   },
   {
-    icon: <ShieldHalf />,
-    text: "Built-in Templates",
+    icon: <Database />,
+    text: "Database Integration",
     description:
-      "Jumpstart your VR projects with a variety of built-in templates for different types of applications and environments.",
+      "Utilizes MongoDB for efficient storage and retrieval of logged IP addresses and request details, ensuring data persistence and reliability.",
   },
   {
-    icon: <BatteryCharging />,
-    text: "Real-Time Preview",
+    icon: <Siren />,
+    text: "Alerting System",
     description:
-      "Preview your VR application in real-time as you make changes, allowing for quick iterations and adjustments.",
+      "Sends notifications when suspicious activities are detected, keeping administrators informed and enabling quick responses to potential threats.",
   },
   {
-    icon: <PlugZap />,
-    text: "Collaboration Tools",
+    icon: <Monitor />,
+    text: "Dynamic Request Monitoring",
     description:
-      "Work together with your team in real-time on VR projects, enabling seamless collaboration and idea sharing.",
+      "Monitors user requests, analyzing patterns to detect and respond to abnormal traffic that may indicate a DDoS attack.",
   },
   {
-    icon: <GlobeLock />,
-    text: "Analytics Dashboard",
+    icon: <LayoutTemplate />,
+    text: "User-Friendly Interface",
     description:
-      "Gain valuable insights into user interactions and behavior within your VR applications with an integrated analytics dashboard.",
+      "Features an intuitive web interface for seamless user experience, allowing users to navigate and access services effortlessly.",
   },
 ];
 
 export const checklistItems = [
   {
-    title: "Code merge made easy",
+    title: "Enhanced Security",
     description:
-      "Track the performance of your VR apps and gain insights into user behavior.",
+      "Protects against DDoS attacks, ensuring uninterrupted access to critical government services.",
   },
   {
-    title: "Review code without worry",
+    title: "Scalability",
     description:
-      "Track the performance of your VR apps and gain insights into user behavior.",
+      "Easily adapts to increasing traffic demands, accommodating a growing number of users efficiently.",
   },
   {
-    title: "AI Assistance to reduce time",
+    title: "Cost Efficiency",
     description:
-      "Track the performance of your VR apps and gain insights into user behavior.",
+      "Utilizes cloud resources effectively, minimizing expenses while maximizing performance and availability.",
   },
   {
-    title: "Share work in minutes",
+    title: "Data Integrity",
     description:
-      "Track the performance of your VR apps and gain insights into user behavior.",
+      "Ensures accurate logging and tracking of user activities, enhancing accountability and transparency in operations.",
   },
 ];
 
@@ -151,28 +100,4 @@ export const pricingOptions = [
       "Private Mode",
     ],
   },
-];
-
-export const resourcesLinks = [
-  { href: "#", text: "Getting Started" },
-  { href: "#", text: "Documentation" },
-  { href: "#", text: "Tutorials" },
-  { href: "#", text: "API Reference" },
-  { href: "#", text: "Community Forums" },
-];
-
-export const platformLinks = [
-  { href: "#", text: "Features" },
-  { href: "#", text: "Supported Devices" },
-  { href: "#", text: "System Requirements" },
-  { href: "#", text: "Downloads" },
-  { href: "#", text: "Release Notes" },
-];
-
-export const communityLinks = [
-  { href: "#", text: "Events" },
-  { href: "#", text: "Meetups" },
-  { href: "#", text: "Conferences" },
-  { href: "#", text: "Hackathons" },
-  { href: "#", text: "Jobs" },
 ];

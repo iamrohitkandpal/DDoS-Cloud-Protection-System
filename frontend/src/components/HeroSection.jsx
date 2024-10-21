@@ -1,29 +1,29 @@
 import video1 from "../assets/video1.mp4";
 import video2 from "../assets/video2.mp4";
+import document from "../assets/PBL-1 Report.pdf";
+import details from "../assets/PBL-1 PPT.pdf";
 
 const HeroSection = () => {
   return (
     <div className="flex flex-col items-center mt-6 lg:mt-20">
       <h1 className="text-4xl sm:text-6xl lg:text-7xl text-center tracking-wide">
-        VirtualR build tools
+        DDoS Protection
         <span className="bg-gradient-to-r from-orange-500 to-red-800 text-transparent bg-clip-text">
           {" "}
-          for developers
+          for Gov Websites
         </span>
       </h1>
       <p className="mt-10 text-lg text-center text-neutral-500 max-w-4xl">
-        Empower your creativity and bring your VR app ideas to life with our
-        intuitive development tools. Get started today and turn your imagination
-        into immersive reality!
+      The goal of this project is to develop a scalable, cloud-based DDoS protection system specifically designed for Indian government websites. The system will offer: Less Downtime, Automated responses, and Cloud-based Scaling.
       </p>
-      <div className="flex justify-center my-10">
+      <div className="flex justify-center my-10 ">
         <a
-          href="#"
-          className="bg-gradient-to-r from-orange-500 to-orange-800 py-3 px-4 mx-3 rounded-md"
+          href={details} target="_blank"
+          className="flex items-center justify-center bg-gradient-to-r from-orange-500 to-orange-800 py-3 px-4 mx-3 before:ease relative overflow-hidden border border-orange-500 bg-orange-800 text-white transition-all duration-100 before:absolute before:right-0 before:top-[50] before:h-32 before:w-5 rounded-md before:translate-x-12 before:rotate-45 before:bg-white before:opacity-25 before:duration-700 hover:before:-translate-x-40"
         >
-          Start for free
+          Details
         </a>
-        <a href="#" className="py-3 px-4 mx-3 rounded-md border">
+        <a href={document} target="_blank" className="py-3 px-4 mx-3 flex items-center before:ease relative overflow-hidden justify-center border transition-all duration-100 before:absolute before:right-0 before:top-[50] before:h-32 before:w-5 rounded-md before:translate-x-12 before:rotate-[50deg] before:bg-white before:opacity-15 before:duration-700 hover:before:-translate-x-48">
           Documentation
         </a>
       </div>
