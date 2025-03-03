@@ -5,14 +5,21 @@ import dotenv from "dotenv";
 import connectDb from "./utils/database.js";
 import bodyParser from "body-parser";
 import logTraffic from "./middlewares/logTraffic.js"; // Import the middleware
+import { securityHeaders } from "./middlewares/security.js";
+import { apiLimiter } from "./middlewares/security.js";
 
 dotenv.config({});
+
+// Add after cors middleware
+app.use(securityHeaders);
+app.use(apiLimiter);
+app.use(express.json({ limit: "10kb" }));
 
 const app = express();
 
 app.use(express.json());
 app.use(bodyParser.json());
-app.use(express.urlencoded({ extended: true }));
+
 
 const corsOptions = {
   origin: "http://localhost:5173", // Ensure this is your React app's port
