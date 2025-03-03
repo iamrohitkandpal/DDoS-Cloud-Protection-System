@@ -1,66 +1,122 @@
 import { TrafficLog } from "../models/TrafficLog.js";
+import Redis from "ioredis";
 
-// Use in-memory structures for tracking requests (could be replaced with Redis or similar)
-const ipRequests = {}; // Store IP addresses and request counts
-const blockedIps = {}; // Store blocked IPs and their unblock time
-
-// Helper function to format the IP address consistently
-const formatIpAddress = (ip) => {
-  return ip.replace(/^::ffff:/, ""); // Handle IPv6 notation for IPv4 addresses
-};
+const redis = new Redis(process.env.REDIS_URL);
+const WINDOW_SIZE = 60 * 1000; // 1 minute
+const MAX_REQUESTS = 100;
 
 const logTraffic = async (req, res, next) => {
-  let ipAddress = req.ip.replace(/^::ffff:/, ""); // Handle IPv6 notation for IPv4 addresses
-  ipAddress = formatIpAddress(ipAddress); // Format the IP address
-
+  const ip = req.headers["x-forwrded-for"] || req.ip;
   const now = Date.now();
-  console.log(ipRequests);
-  console.log(blockedIps);
-
-  // Check if this IP is currently blocked
-  if (blockedIps[ipAddress] && blockedIps[ipAddress] > now) {
-    return res.json({ warning: "You will be blocked, Attacker!" }); // Respond with blocked message
-  }
-
-  // Remove IP from blocked list if block period has expired
-  if (blockedIps[ipAddress] && blockedIps[ipAddress] <= now) {
-    delete blockedIps[ipAddress];
-  }
-
-  // Track request count
-  ipRequests[ipAddress] = ipRequests[ipAddress] || [];
-  ipRequests[ipAddress].push(now);
-
-  // Keep only requests from the last 10 seconds
-  ipRequests[ipAddress] = ipRequests[ipAddress].filter(
-    (time) => now - time < 10000
-  );
-
-  // If too many requests, block the IP
-  if (ipRequests[ipAddress].length > 5) {
-    blockedIps[ipAddress] = now + 10 * 60 * 1000; // Block for 10 minutes
-    return res.json({ warning: "You will be blocked, Attacker!" }); // Blocked response
-  }
-
-  // Log traffic and return the welcome message
-  const logEntry = new TrafficLog({
-    ipAddress,
-    requestTime: new Date(),
-    requestPath: req.originalUrl,
-  });
 
   try {
+    // Check Redis for existing blocks
+    const blockExpiry = await redis.get(`blocked:${ip}`);
+    if (blockExpiry && now < blockExpiry) {
+      return res.status(429).json({
+        warning: "Too many requests. Try again later.",
+      });
+    }
+    // Sliding window rate limiting
+    const requests = await redis.lrange(`requests:${ip}`, 0, -1);
+    const recentRequests = requests.filter((time) => now - time < WINDOW_SIZE);
+
+    if (recentRequests.length >= MAX_REQUESTS) {
+      await redis.setex(`blocked:${ip}`, 600, now + 10 * 60 * 1000);
+      await redis.del(`requests:${ip}`);
+      return res.status(429).json({ warning: "Too many requests!" });
+    }
+
+    // Log request
+    await redis.lpush(`requests:${ip}`, now);
+    await redis.ltrim(`requests:${ip}`, 0, MAX_REQUESTS - 1);
+
+    // Save to MongoDB
+    const logEntry = new TrafficLog({
+      ipAddress: ip,
+      requestTime: new Date(),
+      requestPath: req.originalUrl,
+      userAgent: req.headers["user-agent"],
+    });
+
     await logEntry.save();
-    return res.json({ message: "Welcome, Visitor!" }); // Non-blocked response
+
+    next();
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Failed to log traffic" });
+    console.error("Traffic logging error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-export default logTraffic;
+// ------- ********* ------- //
+// ------- 2nd Draft ------- //
+// ------- ********* ------- //
 
+// import { TrafficLog } from "../models/TrafficLog.js";
+
+// // Use in-memory structures for tracking requests (could be replaced with Redis or similar)
+// const ipRequests = {}; // Store IP addresses and request counts
+// const blockedIps = {}; // Store blocked IPs and their unblock time
+
+// // Helper function to format the IP address consistently
+// const formatIpAddress = (ip) => {
+//   return ip.replace(/^::ffff:/, ""); // Handle IPv6 notation for IPv4 addresses
+// };
+
+// const logTraffic = async (req, res, next) => {
+//   let ipAddress = req.ip.replace(/^::ffff:/, ""); // Handle IPv6 notation for IPv4 addresses
+//   ipAddress = formatIpAddress(ipAddress); // Format the IP address
+
+//   const now = Date.now();
+//   console.log(ipRequests);
+//   console.log(blockedIps);
+
+//   // Check if this IP is currently blocked
+//   if (blockedIps[ipAddress] && blockedIps[ipAddress] > now) {
+//     return res.json({ warning: "You will be blocked, Attacker!" }); // Respond with blocked message
+//   }
+
+//   // Remove IP from blocked list if block period has expired
+//   if (blockedIps[ipAddress] && blockedIps[ipAddress] <= now) {
+//     delete blockedIps[ipAddress];
+//   }
+
+//   // Track request count
+//   ipRequests[ipAddress] = ipRequests[ipAddress] || [];
+//   ipRequests[ipAddress].push(now);
+
+//   // Keep only requests from the last 10 seconds
+//   ipRequests[ipAddress] = ipRequests[ipAddress].filter(
+//     (time) => now - time < 10000
+//   );
+
+//   // If too many requests, block the IP
+//   if (ipRequests[ipAddress].length > 5) {
+//     blockedIps[ipAddress] = now + 10 * 60 * 1000; // Block for 10 minutes
+//     return res.json({ warning: "You will be blocked, Attacker!" }); // Blocked response
+//   }
+
+//   // Log traffic and return the welcome message
+//   const logEntry = new TrafficLog({
+//     ipAddress,
+//     requestTime: new Date(),
+//     requestPath: req.originalUrl,
+//   });
+
+//   try {
+//     await logEntry.save();
+//     return res.json({ message: "Welcome, Visitor!" }); // Non-blocked response
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: "Failed to log traffic" });
+//   }
+// };
+
+// export default logTraffic;
+
+// ------- ********* ------- //
 // ------- 1st Draft ------- //
+// ------- ********* ------- //
 
 // import { TrafficLog } from "../models/TrafficLog.js";
 
