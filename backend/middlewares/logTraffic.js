@@ -1,12 +1,12 @@
 import { TrafficLog } from "../models/TrafficLog.js";
 import Redis from "ioredis";
 
-const redis = new Redis(process.env.REDIS_URL);
+const redis = new Redis(process.env.REDIS_URL || "redis://127.0.0.1:6379");
 const WINDOW_SIZE = 60 * 1000; // 1 minute
 const MAX_REQUESTS = 100;
 
 const logTraffic = async (req, res, next) => {
-  const ip = req.headers["x-forwrded-for"] || req.ip;
+  const ip = req.headers["x-forwarded-for"] || req.ip; // Corrected spelling
   const now = Date.now();
 
   try {

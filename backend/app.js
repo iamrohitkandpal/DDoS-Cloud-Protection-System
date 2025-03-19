@@ -10,16 +10,13 @@ import { apiLimiter } from "./middlewares/security.js";
 
 dotenv.config({});
 
-// Add after cors middleware
+const app = express();
+
 app.use(securityHeaders);
 app.use(apiLimiter);
 app.use(express.json({ limit: "10kb" }));
 
-const app = express();
-
-app.use(express.json());
 app.use(bodyParser.json());
-
 
 const corsOptions = {
   origin: "http://localhost:5173", // Ensure this is your React app's port
