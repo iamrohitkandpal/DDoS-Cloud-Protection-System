@@ -3,13 +3,15 @@ import HeroSection from "./components/HeroSection";
 import FeatureSection from "./components/FeatureSection";
 import Workflow from "./components/Workflow";
 import Footer from "./components/Footer";
-// import Pricing from "./components/Pricing";
-import { useEffect } from "react";
+import AdvancedDashboard from "./components/AdvancedDashboard";
+import { useState, useEffect } from "react";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { toast, Toaster } from "sonner";
 
 const App = () => {
+  const [showDashboard, setShowDashboard] = useState(false);
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -34,14 +36,19 @@ const App = () => {
 
   return (
     <>
-    <Toaster richColors />
-      <Navbar />
+      <Toaster richColors />
+      <Navbar onDashboardClick={() => setShowDashboard(!showDashboard)} />
       <div className="max-w-7xl mx-auto pt-20 px-6">
-        <HeroSection />
-        <FeatureSection />
-        <Workflow />
-        {/* <Pricing /> */}
-        <Footer />
+        {showDashboard ? (
+          <AdvancedDashboard />
+        ) : (
+          <>
+            <HeroSection />
+            <FeatureSection />
+            <Workflow />
+            <Footer />
+          </>
+        )}
       </div>
     </>
   );
