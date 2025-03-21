@@ -6,10 +6,10 @@ dotenv.config();
 
 const connectDb = async () => {
   try {
-    // Use a direct connection string format instead of SRV
-    const connectionString = process.env.MONGO_URI || 
-      "mongodb+srv://iamrohitkandpal:Z36R9Y3n3UqCVGgU@cluster0.xljty.mongodb.net/ddos_protection?retryWrites=true&w=majority";
+    // Allow fallback to direct connection if SRV fails
+    let connectionString = process.env.MONGO_URI;
     
+    // Handle both srv and direct connection strings
     const options = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -17,11 +17,23 @@ const connectDb = async () => {
     };
 
     await mongoose.connect(connectionString, options);
-    console.log("MongoDB connected");
+    console.log("MongoDB connected successfully");
   } catch (error) {
     console.error("MongoDB connection failed:", error.message);
-    // Don't exit the process, allow app to run without MongoDB
-    console.log("Application will run without MongoDB logging");
+    
+    // Try direct connection as fallback
+    try {
+      const directUri = process.env.MONGO_URI_DIRECT;
+      
+      await mongoose.connect(directUri, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        serverSelectionTimeoutMS: 5000
+      });
+      console.log("MongoDB connected via direct connection");
+    } catch (directError) {
+      console.error("All MongoDB connection attempts failed. Using in-memory storage only.");
+    }
   }
 };
 
