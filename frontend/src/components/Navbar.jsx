@@ -1,9 +1,8 @@
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import logo from "../assets/logo.png";
-// import { navItems } from "../constants";
 
-const Navbar = () => {
+const Navbar = ({ onDashboardClick }) => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   const toggleNavbar = () => {
@@ -18,13 +17,13 @@ const Navbar = () => {
             <img className="h-10 w-10 mr-2" src={logo} alt="Logo" />
             <span className="text-xl tracking-tight">Rakshak</span>
           </div>
-          {/* <ul className="hidden lg:flex ml-14 space-x-12">
-            {navItems.map((item, index) => (
-              <li key={index}>
-                <a href={item.href}>{item.label}</a>
-              </li>
-            ))}
-          </ul> */}
+          <ul className="hidden lg:flex ml-14 space-x-12">
+            <li>
+              <button onClick={onDashboardClick} className="hover:text-orange-500 transition-colors">
+                Dashboard
+              </button>
+            </li>
+          </ul>
           <div className="hidden lg:flex justify-center space-x-6 items-center">
             <a
               href="https://mail.google.com/mail/?view=cm&fs=1&to=iamrohitkandpal@gmail.com"
@@ -49,13 +48,16 @@ const Navbar = () => {
         </div>
         {mobileDrawerOpen && (
           <div className="fixed right-0 z-20 bg-neutral-900 w-full p-12 flex flex-col justify-center items-center lg:hidden">
-            {/* <ul>
-              {navItems.map((item, index) => (
-                <li key={index} className="py-4">
-                  <a href={item.href}>{item.label}</a>
-                </li>
-              ))}
-            </ul> */}
+            <ul>
+              <li className="py-4">
+                <button onClick={() => {
+                  onDashboardClick();
+                  toggleNavbar();
+                }} className="text-white hover:text-orange-500">
+                  Dashboard
+                </button>
+              </li>
+            </ul>
             <div className="flex space-x-6">
               <a
                 href="mailto: iamrohitkandpal@gmail.com"

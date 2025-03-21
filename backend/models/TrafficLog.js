@@ -13,6 +13,10 @@ const trafficLogSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  userAgent: {
+    type: String,
+    required: false,
+  },
 });
 
 const TrafficLog = mongoose.model('TrafficLog', trafficLogSchema);
