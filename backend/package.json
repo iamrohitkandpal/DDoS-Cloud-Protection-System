@@ -5,7 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "stress": "node utils/stressTest.js",
+    "whitelist": "node utils/whitelistIp.js",
+    "test-all": "node utils/testAll.js",
+    "ws-test": "node utils/websocketTest.js"
   },
   "keywords": [],
   "author": "",

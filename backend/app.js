@@ -12,6 +12,11 @@ import { apiLimiter } from "./middlewares/security.js";
 import { getDashboardStats } from "./controllers/dashboardController.js";
 import { createServer } from 'http';
 import { initializeAlertSystem } from './utils/alertSystem.js';
+import geoBlocking from './middlewares/geoBlocking.js';
+import { analyzeTrafficPattern } from './utils/trafficAnalyzer.js';
+import { extractFeatures, predictAttack } from './utils/mlDetection.js';
+import honeypotRoutes from './routes/honeypot.js';
+import { blockIPWithCloudflare } from './utils/wafIntegration.js';
 
 const app = express();
 const server = createServer(app);
@@ -56,14 +61,40 @@ app.get("/api/stats", (req, res) => {
   });
 });
 
-// Import the honeypot routes
-import honeypotRoutes from './routes/honeypot.js';
+// Apply the geo blocking middleware (if you want to enable it)
+// app.use(geoBlocking);
 
 // Add honeypot endpoints (these appear legitimate but detect scanners)
 app.use('/api/v1/private', honeypotRoutes);
 app.use('/wp-admin', honeypotRoutes);
 app.use('/admin/config', honeypotRoutes);
 app.use('/phpmyadmin', honeypotRoutes);
+
+// Add advanced detection endpoint
+app.get('/api/analyze/:ip', async (req, res) => {
+  const ip = req.params.ip;
+  
+  try {
+    // Perform analysis
+    const patternAnalysis = await analyzeTrafficPattern(ip);
+    const features = await extractFeatures(ip);
+    const prediction = predictAttack(features);
+    
+    // If high confidence attack predicted, optionally block with Cloudflare
+    if (prediction.isAttack && prediction.confidence > 0.8) {
+      await blockIPWithCloudflare(ip, prediction.reason);
+    }
+    
+    res.json({
+      ip,
+      patternAnalysis,
+      mlPrediction: prediction
+    });
+  } catch (error) {
+    console.error('Analysis error:', error);
+    res.status(500).json({ error: 'Analysis failed' });
+  }
+});
 
 // Start the server
 const PORT = process.env.PORT || 5000;

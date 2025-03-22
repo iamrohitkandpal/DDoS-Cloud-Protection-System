@@ -6,6 +6,7 @@
 - [Technologies Used](#technologies-used)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Advanced Features](#advanced-features)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -21,9 +22,9 @@ The **DDoS Protection System** is a web application designed to safeguard agains
 - **Nginx Server Integration**: Enhances performance and load balancing for web traffic.
 
 ## Technologies Used
-- **Frontend**: React, Axios, Sonner Toast
-- **Backend**: Node.js, Express, MongoDB
-- **Cloud Services**: AWS EC2, Nginx
+- **Frontend**: React, Axios, Sonner Toast, Recharts
+- **Backend**: Node.js, Express, MongoDB, Redis
+- **Cloud Services**: Redis Cloud, MongoDB Atlas
 - **Development Tools**: Git, Postman
 
 ## Installation
@@ -32,4 +33,11 @@ To get started with this project, clone the repository and install the necessary
 ```bash
 git clone https://github.com/iamrohitkandpal/ddos-protection-system.git
 cd ddos-protection-system
+
+# Install backend dependencies
+cd backend
+npm install
+
+# Install frontend dependencies
+cd ../frontend
 npm install
