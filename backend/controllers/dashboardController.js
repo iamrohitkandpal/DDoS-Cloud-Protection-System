@@ -69,7 +69,7 @@ const generateMockData = () => {
   };
 };
 
-// Fix in getDashboardStats function
+// In getDashboardStats function, add this:
 export const getDashboardStats = async (req, res) => {
   try {
     // Try to get real stats if possible

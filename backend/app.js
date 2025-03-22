@@ -56,6 +56,15 @@ app.get("/api/stats", (req, res) => {
   });
 });
 
+// Import the honeypot routes
+import honeypotRoutes from './routes/honeypot.js';
+
+// Add honeypot endpoints (these appear legitimate but detect scanners)
+app.use('/api/v1/private', honeypotRoutes);
+app.use('/wp-admin', honeypotRoutes);
+app.use('/admin/config', honeypotRoutes);
+app.use('/phpmyadmin', honeypotRoutes);
+
 // Start the server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
