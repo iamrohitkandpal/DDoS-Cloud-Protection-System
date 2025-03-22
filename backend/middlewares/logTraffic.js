@@ -91,33 +91,31 @@ const logTraffic = async (req, res, next) => {
     if (!redis.isReady || redisBreaker.isOpen) {
       if (!fallbackStore) fallbackStore = new InMemoryStore();
       
-      // Use in-memory fallback
-      const blocks = fallbackStore.blocks;
-      if (blocks[ip] && now < blocks[ip]) {
+      // Use in-memory fallback using the proper methods
+      const blockExpiry = await fallbackStore.get(`blocked:${ip}`);
+      
+      if (blockExpiry && now < parseInt(blockExpiry)) {
         return res.status(429).json({
           warning: "Too many requests. Try again later.",
         });
       }
       
-      // Simple in-memory rate limiting
-      if (!fallbackStore.data[ip]) {
-        fallbackStore.data[ip] = [];
-      }
+      // Get existing requests or create new array
+      const existingRequests = await fallbackStore.lRange(`requests:${ip}`, 0, -1) || [];
+      await fallbackStore.lPush(`requests:${ip}`, now.toString());
       
-      fallbackStore.data[ip].push(now);
-      
-      // Keep only recent requests
-      const recentRequests = fallbackStore.data[ip].filter(
-        time => now - time < WINDOW_SIZE
-      );
-      fallbackStore.data[ip] = recentRequests;
+      const requests = await fallbackStore.lRange(`requests:${ip}`, 0, -1);
+      const recentRequests = requests.filter(time => now - parseInt(time) < WINDOW_SIZE);
       
       if (recentRequests.length >= MAX_REQUESTS) {
         const blockExpiration = now + 10 * 60 * 1000;
-        fallbackStore.blocks[ip] = blockExpiration;
-        delete fallbackStore.data[ip];
+        await fallbackStore.set(`blocked:${ip}`, blockExpiration.toString(), { EX: 600 });
+        await fallbackStore.del(`requests:${ip}`);
         return res.status(429).json({ warning: "Too many requests!" });
       }
+      
+      // Trim the list
+      await fallbackStore.lTrim(`requests:${ip}`, 0, MAX_REQUESTS - 1);
     }
 
     // Save to MongoDB with error handling

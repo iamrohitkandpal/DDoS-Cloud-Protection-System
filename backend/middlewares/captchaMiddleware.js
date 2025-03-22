@@ -43,8 +43,33 @@ const captchaMiddleware = async (req, res, next) => {
 
 // Helper function to check if an IP is suspicious
 const checkIfSuspicious = async (ip) => {
-  // Implement your logic here
-  return false;
+  try {
+    // Check if the IP has been rate-limited recently
+    const redis = createClient({
+      username: 'default',
+      password: process.env.REDIS_PASSWORD,
+      socket: {
+        host: process.env.REDIS_HOST,
+        port: 16434
+      }
+    });
+    
+    await redis.connect();
+    
+    // Check for high request rate
+    const requests = await redis.lRange(`requests:${ip}`, 0, -1);
+    const now = Date.now();
+    const recentRequests = requests.filter(time => now - parseInt(time) < 60000); // Last minute
+    
+    // More than 30 requests in the last minute is suspicious
+    const isSuspicious = recentRequests.length > 30;
+    
+    await redis.quit();
+    return isSuspicious;
+  } catch (error) {
+    console.error('Error checking suspicious IP:', error);
+    return false; // Fail open
+  }
 };
 
 export default captchaMiddleware;
