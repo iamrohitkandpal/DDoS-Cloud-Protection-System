@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
-import { CountUp } from "react-countup";
+import CountUp from "react-countup";
 import axios from "axios";
 
 const Dashboard = () => {

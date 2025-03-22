@@ -1,22 +1,49 @@
-import { Client } from "@stomp/stompjs";
-
-let client = null;
+let ws = null;
 
 export const connectWebSocket = (onMessage) => {
-  client = new Client({
-    brokerURL: "ws://localhost:8000/ws",
-    reconnectDelay: 5000,
-    onConnect: () => {
-      client.subscribe("/topic/traffic", (message) => {
-        onMessage(JSON.parse(message.body));
-      });
-    },
-  });
-
-  client.activate();
-  return client;
+  // Use plain WebSocket instead of STOMP client for simplicity
+  if (ws) {
+    ws.close();
+  }
+  
+  try {
+    ws = new WebSocket("ws://localhost:5000");
+    
+    ws.onopen = () => {
+      console.log('WebSocket connected');
+    };
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        onMessage(data);
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+    
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+    
+    ws.onclose = () => {
+      console.log('WebSocket closed');
+      // Try to reconnect after 5 seconds
+      setTimeout(() => {
+        if (onMessage) connectWebSocket(onMessage);
+      }, 5000);
+    };
+    
+    return ws;
+  } catch (error) {
+    console.error('Error creating WebSocket:', error);
+    return null;
+  }
 };
 
 export const disconnectWebSocket = () => {
-  if (client) client.deactivate();
+  if (ws) {
+    ws.close();
+    ws = null;
+  }
 };

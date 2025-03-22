@@ -14,38 +14,59 @@ const HeroSection = () => {
         </span>
       </h1>
       <p className="mt-10 text-lg text-center text-neutral-500 max-w-4xl">
-      The goal of this project is to develop a scalable, cloud-based DDoS protection system specifically designed for Indian government websites. The system will offer: Less Downtime, Automated responses, and Cloud-based Scaling.
+        The goal of this project is to develop a scalable, cloud-based DDoS
+        protection system specifically designed for Indian government websites.
+        The system will offer: Less Downtime, Automated responses, and
+        Cloud-based Scaling.
       </p>
       <div className="flex justify-center my-10 ">
         <a
-          href={details} target="_blank"
+          href={details}
+          target="_blank"
           className="flex items-center justify-center bg-gradient-to-r from-orange-500 to-orange-800 py-3 px-4 mx-3 before:ease relative overflow-hidden border border-orange-500 bg-orange-800 text-white transition-all duration-100 before:absolute before:right-0 before:top-[50] before:h-32 before:w-5 rounded-md before:translate-x-12 before:rotate-45 before:bg-white before:opacity-25 before:duration-700 hover:before:-translate-x-40"
         >
           Details
         </a>
-        <a href={document} target="_blank" className="py-3 px-4 mx-3 flex items-center before:ease relative overflow-hidden justify-center border transition-all duration-100 before:absolute before:right-0 before:top-[50] before:h-32 before:w-5 rounded-md before:translate-x-12 before:rotate-[50deg] before:bg-white before:opacity-15 before:duration-700 hover:before:-translate-x-48">
+        <a
+          href={document}
+          target="_blank"
+          className="py-3 px-4 mx-3 flex items-center before:ease relative overflow-hidden justify-center border transition-all duration-100 before:absolute before:right-0 before:top-[50] before:h-32 before:w-5 rounded-md before:translate-x-12 before:rotate-[50deg] before:bg-white before:opacity-15 before:duration-700 hover:before:-translate-x-48"
+        >
           Documentation
         </a>
       </div>
       <div className="flex mt-10 justify-center">
-        <video
-          autoPlay
-          loop
-          muted
-          className="rounded-lg w-1/2 border border-orange-700 shadow-sm shadow-orange-400 mx-2 my-4"
-        >
-          <source src={video1} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-        <video
-          autoPlay
-          loop
-          muted
-          className="rounded-lg w-1/2 border border-orange-700 shadow-sm shadow-orange-400 mx-2 my-4"
-        >
-          <source src={video2} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+        {typeof video1 !== "undefined" ? (
+          <video
+            autoPlay
+            loop
+            muted
+            className="rounded-lg w-1/2 border border-orange-700 shadow-sm shadow-orange-400 mx-2 my-4"
+          >
+            <source src={video1} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        ) : (
+          <div className="rounded-lg w-1/2 border border-orange-700 flex items-center justify-center bg-neutral-800 mx-2 my-4 h-64">
+            <p className="text-neutral-400">Demo Video 1</p>
+          </div>
+        )}
+
+        {typeof video2 !== "undefined" ? (
+          <video
+            autoPlay
+            loop
+            muted
+            className="rounded-lg w-1/2 border border-orange-700 shadow-sm shadow-orange-400 mx-2 my-4"
+          >
+            <source src={video2} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        ) : (
+          <div className="rounded-lg w-1/2 border border-orange-700 flex items-center justify-center bg-neutral-800 mx-2 my-4 h-64">
+            <p className="text-neutral-400">Demo Video 2</p>
+          </div>
+        )}
       </div>
     </div>
   );

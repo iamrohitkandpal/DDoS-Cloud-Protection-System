@@ -6,6 +6,7 @@ import {
   PieChart, Pie, Cell
 } from 'recharts';
 import CountUp from 'react-countup';
+import { connectWebSocket, disconnectWebSocket } from '../utils/websocket.js';
 
 const AdvancedDashboard = () => {
   const [stats, setStats] = useState({
@@ -16,6 +17,7 @@ const AdvancedDashboard = () => {
     geoDistribution: [],
     systemStatus: 'operational'
   });
+  const [alerts, setAlerts] = useState([]);
   
   useEffect(() => {
     const fetchStats = async () => {
@@ -31,6 +33,40 @@ const AdvancedDashboard = () => {
     const interval = setInterval(fetchStats, 60000); // Update every minute
     
     return () => clearInterval(interval);
+  }, []);
+  
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/dashboard/stats');
+        setStats(res.data);
+      } catch (err) {
+        console.error('Failed to fetch dashboard stats:', err);
+      }
+    };
+    
+    // Connect to WebSocket for real-time updates
+    let webSocketClient;
+    
+    try {
+      webSocketClient = connectWebSocket((data) => {
+        if (data.type === 'honeypot_triggered') {
+          // Add alert to dashboard
+          setAlerts(prev => [data, ...prev].slice(0, 5));
+        }
+        
+        // Update stats if needed
+        fetchStats();
+      });
+    } catch (error) {
+      console.error('Failed to connect to WebSocket:', error);
+    }
+    
+    return () => {
+      if (webSocketClient) {
+        disconnectWebSocket();
+      }
+    };
   }, []);
   
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#a64d79'];
@@ -125,6 +161,24 @@ const AdvancedDashboard = () => {
           </div>
         </div>
       </div>
+
+      {alerts.length > 0 && (
+        <div className="mt-8 bg-neutral-800 p-4 rounded">
+          <h3 className="mb-4 text-lg text-red-400">Security Alerts</h3>
+          <div className="overflow-y-auto max-h-[200px]">
+            {alerts.map((alert, idx) => (
+              <div key={idx} className="mb-2 p-2 bg-red-900/30 rounded-sm">
+                <p className="text-sm">
+                  <span className="font-semibold">{alert.type}</span> from IP {alert.ip}
+                  <span className="text-xs text-neutral-400 ml-2">
+                    {new Date(alert.timestamp).toLocaleTimeString()}
+                  </span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
