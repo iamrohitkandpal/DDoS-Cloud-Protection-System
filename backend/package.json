@@ -10,7 +10,8 @@
     "stress": "node utils/stressTest.js",
     "whitelist": "node utils/whitelistIp.js",
     "test-all": "node utils/testAll.js",
-    "ws-test": "node utils/websocketTest.js"
+    "ws-test": "node utils/websocketTest.js",
+    "test-mongo": "node utils/testMongo.js"
   },
   "keywords": [],
   "author": "",

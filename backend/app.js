@@ -17,12 +17,27 @@ import { analyzeTrafficPattern } from './utils/trafficAnalyzer.js';
 import { extractFeatures, predictAttack } from './utils/mlDetection.js';
 import honeypotRoutes from './routes/honeypot.js';
 import { blockIPWithCloudflare } from './utils/wafIntegration.js';
+import { createClient } from 'redis';
+import mongoose from 'mongoose';
 
 const app = express();
 const server = createServer(app);
 
 // Initialize WebSocket server for real-time alerts
 initializeAlertSystem(server);
+
+// Create Redis client reference to use in health check
+const redis = createClient({
+  username: process.env.REDIS_USERNAME || 'default',
+  password: process.env.REDIS_PASSWORD,
+  socket: {
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT || '16434')
+  }
+});
+
+// No need to connect, just create the reference
+// We'll check isReady in the health endpoint
 
 // Middlewares
 app.use(express.json({ limit: "10kb" }));
@@ -94,6 +109,18 @@ app.get('/api/analyze/:ip', async (req, res) => {
     console.error('Analysis error:', error);
     res.status(500).json({ error: 'Analysis failed' });
   }
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  const health = {
+    uptime: process.uptime(),
+    timestamp: Date.now(),
+    redis: redis.isReady ? 'connected' : 'disconnected',
+    mongo: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  };
+  
+  res.json(health);
 });
 
 // Start the server
