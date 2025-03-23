@@ -9,11 +9,11 @@ dotenv.config();
 
 // Create Redis client with explicit configuration instead of relying on env vars
 const redis = createClient({
-  username: 'default',
-  password: 'pIcXmXY7fpJRKfFw73XxVThU9MQg5HZf',
+  username: process.env.REDIS_USERNAME || 'default',
+  password: process.env.REDIS_PASSWORD,
   socket: {
-    host: 'redis-16434.c301.ap-south-1-1.ec2.redns.redis-cloud.com',
-    port: 16434
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT || '16434')
   }
 });
 

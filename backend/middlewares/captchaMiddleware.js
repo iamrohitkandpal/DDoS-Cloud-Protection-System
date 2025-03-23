@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { createClient } from 'redis'; // Add this import
 
 const captchaMiddleware = async (req, res, next) => {
   // Only apply to suspicious traffic (can use your detection logic)
@@ -46,11 +47,11 @@ const checkIfSuspicious = async (ip) => {
   try {
     // Check if the IP has been rate-limited recently
     const redis = createClient({
-      username: 'default',
+      username: process.env.REDIS_USERNAME || 'default',
       password: process.env.REDIS_PASSWORD,
       socket: {
         host: process.env.REDIS_HOST,
-        port: 16434
+        port: parseInt(process.env.REDIS_PORT || '16434')
       }
     });
     
