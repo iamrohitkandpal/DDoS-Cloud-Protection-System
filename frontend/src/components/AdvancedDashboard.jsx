@@ -19,6 +19,7 @@ const AdvancedDashboard = () => {
   });
   const [alerts, setAlerts] = useState([]);
   
+  // Keep only this combined useEffect
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -31,19 +32,6 @@ const AdvancedDashboard = () => {
     
     fetchStats();
     const interval = setInterval(fetchStats, 60000); // Update every minute
-    
-    return () => clearInterval(interval);
-  }, []);
-  
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await axios.get('http://localhost:5000/api/dashboard/stats');
-        setStats(res.data);
-      } catch (err) {
-        console.error('Failed to fetch dashboard stats:', err);
-      }
-    };
     
     // Connect to WebSocket for real-time updates
     let webSocketClient;
@@ -63,6 +51,7 @@ const AdvancedDashboard = () => {
     }
     
     return () => {
+      clearInterval(interval);
       if (webSocketClient) {
         disconnectWebSocket();
       }
