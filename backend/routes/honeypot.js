@@ -4,11 +4,11 @@ import { sendAlert } from '../utils/alertSystem.js';
 
 const router = express.Router();
 const redis = createClient({
-  username: 'default',
+  username: process.env.REDIS_USERNAME || 'default',
   password: process.env.REDIS_PASSWORD,
   socket: {
     host: process.env.REDIS_HOST,
-    port: 16434
+    port: parseInt(process.env.REDIS_PORT || '16434')
   }
 });
 
