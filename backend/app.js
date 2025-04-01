@@ -19,6 +19,7 @@ import honeypotRoutes from './routes/honeypot.js';
 import { blockIPWithCloudflare } from './utils/wafIntegration.js';
 import { createClient } from 'redis';
 import mongoose from 'mongoose';
+import authRoutes from './routes/auth.js';
 
 const app = express();
 const server = createServer(app);
@@ -53,6 +54,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(logTraffic);
+app.use('/api/auth', authRoutes);
 
 // Sample API route (optional, if you need to fetch data from backend)
 app.get("/api/data", (req, res) => {
