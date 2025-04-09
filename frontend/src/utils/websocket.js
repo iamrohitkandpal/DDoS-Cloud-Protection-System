@@ -7,6 +7,32 @@ export const connectWebSocket = (onMessage) => {
   }
   
   try {
+    // Add a check for demo mode
+    const isDemoMode = !localStorage.getItem('useRealWebSocket');
+    
+    if (isDemoMode) {
+      console.log('WebSocket in demo mode (not connecting to real server)');
+      // Send mock data periodically to simulate events
+      const mockInterval = setInterval(() => {
+        if (onMessage) {
+          onMessage({
+            type: 'demo_data',
+            timestamp: new Date().toISOString(),
+            message: 'This is simulated data for demo mode'
+          });
+        }
+      }, 10000);
+      
+      // Return a mock websocket object
+      return {
+        close: () => {
+          console.log('Closing mock WebSocket');
+          clearInterval(mockInterval);
+        },
+        isMock: true
+      };
+    }
+    
     ws = new WebSocket("ws://localhost:5000");
     
     ws.onopen = () => {
@@ -24,6 +50,10 @@ export const connectWebSocket = (onMessage) => {
     
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
+      // Signal to the component that WebSocket failed
+      if (onMessage) {
+        onMessage({ type: 'connection_error', error: 'WebSocket connection failed' });
+      }
     };
     
     ws.onclose = () => {
@@ -37,6 +67,10 @@ export const connectWebSocket = (onMessage) => {
     return ws;
   } catch (error) {
     console.error('Error creating WebSocket:', error);
+    // Signal to the component that WebSocket creation failed
+    if (onMessage) {
+      onMessage({ type: 'connection_error', error: 'Failed to create WebSocket connection' });
+    }
     return null;
   }
 };

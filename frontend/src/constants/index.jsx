@@ -69,6 +69,29 @@ export const checklistItems = [
   },
 ];
 
+export const MOCK_DATA = {
+  trafficSummary: { total: 5860, blocked: 982, suspicious: 243 },
+  trafficOverTime: Array.from({length: 12}, (_, i) => ({
+    time: `${i+1}:00`,
+    normal: Math.floor(Math.random() * 100) + 50,
+    blocked: Math.floor(Math.random() * 30)
+  })),
+  attacksByType: [
+    { name: 'HTTP Flood', value: 65 },
+    { name: 'TCP SYN', value: 20 },
+    { name: 'Volumetric', value: 10 },
+    { name: 'Slow Loris', value: 5 }
+  ],
+  topIPs: [
+    { address: '192.168.1.100', count: 256, country: 'US' },
+    { address: '10.0.0.25', count: 198, country: 'CN' },
+    { address: '172.16.0.5', count: 157, country: 'RU' },
+    { address: '192.168.2.15', count: 134, country: 'BR' },
+    { address: '10.0.1.200', count: 98, country: 'IN' }
+  ],
+  systemStatus: 'operational'
+}
+
 // export const pricingOptions = [
 //   {
 //     title: "Free",
