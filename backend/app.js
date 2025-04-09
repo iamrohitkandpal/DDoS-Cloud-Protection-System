@@ -21,6 +21,10 @@ import { createClient } from 'redis';
 import mongoose from 'mongoose';
 import authRoutes from './routes/auth.js';
 
+// Near the top of your file, add this line to detect demo mode
+const isInDemoMode = process.argv.includes('--demo');
+console.log(`Running in ${isInDemoMode ? 'DEMO' : 'PRODUCTION'} mode`);
+
 const app = express();
 const server = createServer(app);
 
@@ -62,7 +66,7 @@ app.get("/api/data", (req, res) => {
 });
 
 // Dashboard stats endpoint
-app.get("/api/dashboard/stats", getDashboardStats);
+app.get("/api/dashboard/stats", (req, res) => getDashboardStats(req, res, isInDemoMode));
 
 // Add endpoint for standard stats (for backward compatibility)
 app.get("/api/stats", (req, res) => {

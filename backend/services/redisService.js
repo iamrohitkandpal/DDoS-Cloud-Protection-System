@@ -22,6 +22,15 @@ class RedisService extends EventEmitter {
     this.isConnecting = true;
     
     try {
+      // Check if we're in demo mode (missing REDIS config)
+      if (!process.env.REDIS_HOST || !process.env.REDIS_PASSWORD) {
+        console.log('Redis credentials not found, using in-memory fallback for demo mode');
+        this.isUsingFallback = true;
+        this.isConnecting = false;
+        this.emit('fallback', true);
+        return;
+      }
+      
       this.client = createClient({
         username: process.env.REDIS_USERNAME || 'default',
         password: process.env.REDIS_PASSWORD,

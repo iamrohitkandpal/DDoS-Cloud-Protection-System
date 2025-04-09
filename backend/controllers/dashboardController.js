@@ -1,24 +1,6 @@
 import { TrafficLog } from "../models/TrafficLog.js";
-import { createClient } from 'redis';
+import redisService from '../services/redisService.js';
 import mongoose from 'mongoose';
-
-const redis = createClient({
-  username: process.env.REDIS_USERNAME || 'default',
-  password: process.env.REDIS_PASSWORD,
-  socket: {
-    host: process.env.REDIS_HOST,
-    port: parseInt(process.env.REDIS_PORT || '16434')
-  }
-});
-
-// Connect to Redis
-(async () => {
-  try {
-    await redis.connect();
-  } catch (error) {
-    console.error('Redis connection error in dashboard controller:', error);
-  }
-})();
 
 // Generate mock data if real data is not available
 const generateMockData = () => {
@@ -69,18 +51,27 @@ const generateMockData = () => {
   };
 };
 
-// In getDashboardStats function, add this:
-export const getDashboardStats = async (req, res) => {
+// Update the function signature to accept isDemo parameter
+export const getDashboardStats = async (req, res, isInDemoMode = false) => {
   try {
     // Try to get real stats if possible
     let stats = {};
     let hasRealData = false;
     
-    // Check if MongoDB is connected
+    // Force mock data if in demo mode
+    if (isInDemoMode) {
+      console.log("Running in demo mode - using mock data");
+      stats = generateMockData();
+      // Add a flag to indicate demo mode
+      stats.isDemo = true;
+      return res.json(stats);
+    }
+    
+    // Normal flow for production mode
     if (mongoose.connection.readyState === 1) {
       try {
         // Get total blocked IPs
-        const blockedKeys = await redis.keys('blocked:*');
+        const blockedKeys = await redisService.keys('blocked:*');
         const blockedCount = blockedKeys.length;
         
         // Get real data from MongoDB
@@ -125,16 +116,46 @@ export const getDashboardStats = async (req, res) => {
             blocked: Math.floor(item.count * 0.15)
           }));
         }
+
+        // Check for actual attack types data
+        const attackTypesData = await TrafficLog.aggregate([
+          { $match: { blocked: true } }, // Assuming you track when requests are blocked
+          { $group: { _id: "$attackType", value: { $sum: 1 } } },
+          { $project: { name: "$_id", value: 1, _id: 0 } }
+        ]);
+        
+        if (attackTypesData && attackTypesData.length > 0) {
+          stats.attacksByType = attackTypesData;
+        }
+        
+        // Get top blocked IPs
+        const topBlockedIPs = await TrafficLog.aggregate([
+          { $match: { blocked: true } },
+          { $group: { _id: "$ipAddress", count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+          { $limit: 5 },
+          { $project: { address: "$_id", count: 1, _id: 0 } }
+        ]);
+        
+        if (topBlockedIPs && topBlockedIPs.length > 0) {
+          // Add country data
+          stats.topIPs = topBlockedIPs.map(ip => ({
+            ...ip,
+            country: ip.country || getCountryCode(ip.address) || '??'
+          }));
+        }
       } catch (error) {
         console.error("Error fetching real stats:", error);
       }
     } else {
-      console.log("MongoDB not connected, using mock data");
+      console.log("MongoDB not connected, falling back to mock data");
     }
     
-    // If no real data available, use mock data
+    // Only use mock data as fallback in production mode
     if (!hasRealData) {
       stats = generateMockData();
+      // Indicate this is fallback data
+      stats.isFallback = true;
     }
     
     res.json(stats);

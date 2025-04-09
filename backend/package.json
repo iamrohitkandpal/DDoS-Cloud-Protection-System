@@ -6,12 +6,14 @@
   "scripts": {
     "dev": "nodemon app.js",
     "start": "node app.js",
+    "demo": "nodemon app.js --demo",
     "test": "echo \"Error: no test specified\" && exit 1",
     "stress": "node utils/stressTest.js",
     "whitelist": "node utils/whitelistIp.js",
     "test-all": "node utils/testAll.js",
     "ws-test": "node utils/websocketTest.js",
-    "test-mongo": "node utils/testMongo.js"
+    "test-mongo": "node utils/testMongo.js",
+    "test-redis": "node utils/testRedis.js"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +29,7 @@
     "helmet": "^8.0.0",
     "hpp": "^0.2.3",
     "ioredis": "^5.5.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.12.1",
     "nodemon": "^3.1.7",
     "redis": "^4.7.0",
