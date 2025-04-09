@@ -6,9 +6,12 @@ import {
   PieChart, Pie, Cell
 } from 'recharts';
 import CountUp from 'react-countup';
+import {MOCK_DATA} from "../constants/index.jsx";
 import { connectWebSocket, disconnectWebSocket } from '../utils/websocket.js';
+import { ArrowLeft } from 'lucide-react'; // Import the back arrow icon
 
-const AdvancedDashboard = () => {
+// Add onBack prop to receive the function that will navigate back to home
+const AdvancedDashboard = ({ onBack }) => {
   const [stats, setStats] = useState({
     trafficSummary: { total: 0, blocked: 0, suspicious: 0 },
     trafficOverTime: [],
@@ -18,42 +21,62 @@ const AdvancedDashboard = () => {
     systemStatus: 'operational'
   });
   const [alerts, setAlerts] = useState([]);
+  const [isDemo, setIsDemo] = useState(false);
   
-  // Keep only this combined useEffect
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/dashboard/stats');
+        const res = await axios.get('http://localhost:5000/api/dashboard/stats', { timeout: 5000 });
+        
+        // Check if this is demo data from the backend
+        if (res.data.isDemo) {
+          setIsDemo(true);
+        } else {
+          setIsDemo(res.data.isFallback || false);
+        }
+        
+        // Always use the data from the backend (which will be mock data in demo mode)
         setStats(res.data);
+        
       } catch (err) {
         console.error('Failed to fetch dashboard stats:', err);
+        setIsDemo(true);
+        // Set mock data for complete API failure
+        setStats(MOCK_DATA);
       }
     };
     
     fetchStats();
     const interval = setInterval(fetchStats, 60000); // Update every minute
     
-    // Connect to WebSocket for real-time updates
-    let webSocketClient;
+    // Connect to WebSocket for real-time updates with better error handling
+    let webSocketClient = null;
     
     try {
       webSocketClient = connectWebSocket((data) => {
-        if (data.type === 'honeypot_triggered') {
-          // Add alert to dashboard
-          setAlerts(prev => [data, ...prev].slice(0, 5));
+        if (data.type === 'honeypot_triggered' || data.type === 'demo_data') {
+          // Add new alerts for demo or real data
+          if (data.type === 'honeypot_triggered') {
+            setAlerts(prev => [data, ...prev].slice(0, 5));
+          }
+          
+          // Refresh stats
+          fetchStats();
         }
-        
-        // Update stats if needed
-        fetchStats();
       });
     } catch (error) {
       console.error('Failed to connect to WebSocket:', error);
+      setIsDemo(true);
     }
     
     return () => {
       clearInterval(interval);
       if (webSocketClient) {
-        disconnectWebSocket();
+        if (webSocketClient.isMock) {
+          webSocketClient.close();
+        } else {
+          disconnectWebSocket();
+        }
       }
     };
   }, []);
@@ -63,7 +86,17 @@ const AdvancedDashboard = () => {
   return (
     <div className="p-6 bg-neutral-900 rounded-lg">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl">DDoS Protection Dashboard</h2>
+        {/* Add back button */}
+        <div className="flex items-center">
+          <button 
+            onClick={onBack}
+            className="mr-3 p-2 hover:bg-neutral-800 rounded-full transition-colors duration-200"
+            aria-label="Back to home"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h2 className="text-2xl">DDoS Protection Dashboard</h2>
+        </div>
         <div className="flex items-center">
           <div className={`w-3 h-3 rounded-full mr-2 ${
             stats.systemStatus === 'operational' ? 'bg-green-500' : 'bg-red-500'
@@ -107,46 +140,58 @@ const AdvancedDashboard = () => {
       <div className="grid grid-cols-2 gap-6 mb-8">
         <div className="bg-neutral-800 p-4 rounded">
           <h3 className="mb-4 text-lg">Attack Types</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={stats.attacksByType}
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              >
-                {stats.attacksByType.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          {stats.attacksByType && stats.attacksByType.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie
+                  data={stats.attacksByType || []}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {(stats.attacksByType || []).map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[200px] flex items-center justify-center text-neutral-500">
+              No attack data available
+            </div>
+          )}
         </div>
         <div className="bg-neutral-800 p-4 rounded">
           <h3 className="mb-4 text-lg">Top Blocked IPs</h3>
           <div className="h-[200px] overflow-y-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="text-left border-b border-neutral-700">
-                  <th className="pb-2">IP Address</th>
-                  <th className="pb-2">Requests</th>
-                  <th className="pb-2">Country</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.topIPs.map((ip, idx) => (
-                  <tr key={idx} className="border-b border-neutral-700">
-                    <td className="py-2">{ip.address}</td>
-                    <td className="py-2">{ip.count}</td>
-                    <td className="py-2">{ip.country}</td>
+            {stats.topIPs && stats.topIPs.length > 0 ? (
+              <table className="w-full">
+                <thead>
+                  <tr className="text-left border-b border-neutral-700">
+                    <th className="pb-2">IP Address</th>
+                    <th className="pb-2">Requests</th>
+                    <th className="pb-2">Country</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {(stats.topIPs || []).map((ip, idx) => (
+                    <tr key={idx} className="border-b border-neutral-700">
+                      <td className="py-2">{ip.address}</td>
+                      <td className="py-2">{ip.count}</td>
+                      <td className="py-2">{ip.country}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="h-full flex items-center justify-center text-neutral-500">
+                No blocked IPs data available
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -155,7 +200,7 @@ const AdvancedDashboard = () => {
         <div className="mt-8 bg-neutral-800 p-4 rounded">
           <h3 className="mb-4 text-lg text-red-400">Security Alerts</h3>
           <div className="overflow-y-auto max-h-[200px]">
-            {alerts.map((alert, idx) => (
+            {(alerts || []).map((alert, idx) => (
               <div key={idx} className="mb-2 p-2 bg-red-900/30 rounded-sm">
                 <p className="text-sm">
                   <span className="font-semibold">{alert.type}</span> from IP {alert.ip}
@@ -166,6 +211,12 @@ const AdvancedDashboard = () => {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {isDemo && (
+        <div className="mt-4 p-2 bg-orange-800/30 rounded text-sm text-center">
+          ⚠️ Running in demo mode - Connect to backend for live data
         </div>
       )}
     </div>

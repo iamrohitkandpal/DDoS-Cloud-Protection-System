@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { toast, Toaster } from "sonner";
+// import { API_URL } from './config.js';
 
 const App = () => {
   const [showDashboard, setShowDashboard] = useState(false);
@@ -15,7 +16,9 @@ const App = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/data");
+        toast.loading('Connecting to backend...');
+        const response = await axios.get("http://localhost:5000/api/data", { timeout: 5000 });
+        // const response = await axios.get(`${API_URL}/api/data`, { timeout: 5000 });
         toast.dismiss();
 
         if (response.data.message) {
@@ -27,7 +30,9 @@ const App = () => {
           throw new Error("No message received from the API");
         }        
       } catch (err) {
-        console.log(err.message);
+        toast.dismiss();
+        console.error("Backend connection error:", err.message);
+        toast.error("Could not connect to backend. Running in demo mode.");
       }
     };
 
