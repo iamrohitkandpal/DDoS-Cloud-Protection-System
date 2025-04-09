@@ -1,7 +1,7 @@
 import video1 from "../assets/video1.mp4";
 import video2 from "../assets/video2.mp4";
 import document from "../assets/PBL-1 Report.pdf";
-import details from "../assets/PBL-1 PPT.pdf";
+import details from "../assets/PBL PPT.pdf";
 
 const handleVideoError = (e) => {
   console.warn('Video could not be loaded:', e);
