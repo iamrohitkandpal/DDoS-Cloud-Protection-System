@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { createClient } from 'redis'; // Add this import
+import redisService from '../services/redisService.js';
 
 const captchaMiddleware = async (req, res, next) => {
   // Only apply to suspicious traffic (can use your detection logic)
@@ -45,27 +46,15 @@ const captchaMiddleware = async (req, res, next) => {
 // Helper function to check if an IP is suspicious
 const checkIfSuspicious = async (ip) => {
   try {
-    // Check if the IP has been rate-limited recently
-    const redis = createClient({
-      username: process.env.REDIS_USERNAME || 'default',
-      password: process.env.REDIS_PASSWORD,
-      socket: {
-        host: process.env.REDIS_HOST,
-        port: parseInt(process.env.REDIS_PORT || '16434')
-      }
-    });
-    
-    await redis.connect();
-    
+    // Use redisService instead of direct connection
     // Check for high request rate
-    const requests = await redis.lRange(`requests:${ip}`, 0, -1);
+    const requests = await redisService.lRange(`requests:${ip}`, 0, -1);
     const now = Date.now();
     const recentRequests = requests.filter(time => now - parseInt(time) < 60000); // Last minute
     
     // More than 30 requests in the last minute is suspicious
     const isSuspicious = recentRequests.length > 30;
     
-    await redis.quit();
     return isSuspicious;
   } catch (error) {
     console.error('Error checking suspicious IP:', error);
