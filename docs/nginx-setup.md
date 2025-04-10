@@ -107,6 +107,28 @@ http {
 }
 ```
 
+## New Security Headers
+add_header X-Content-Type-Options "nosniff" always;
+add_header Permissions-Policy "interest-cohort=()";
+add_header Cross-Origin-Embedder-Policy "require-corp";
+
+## Enhanced Rate Limiting
+limit_req_zone $http_x_forwarded_for zone=proxy_limit:10m rate=100r/s;
+limit_conn_zone $http_x_forwarded_for zone=conn_limit:10m;
+
+## WebSocket Support
+location /wss/ {
+    proxy_pass http://backend;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "Upgrade";
+    proxy_set_header X-Real-IP $remote_addr;
+}
+
+## Fail2Ban Integration
+# Block repeated offenders at firewall level
+fail2ban-regex /var/log/nginx/ddos-protection-access.log ^<HOST>.*"(GET|POST).* 4\d\d
+
 ## Troubleshooting
 
 ### Common Issues

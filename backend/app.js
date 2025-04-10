@@ -83,13 +83,14 @@ app.get("/api/stats", (req, res) => {
 });
 
 // Apply the geo blocking middleware (if you want to enable it)
-// app.use(geoBlocking);
+app.use(geoBlocking);
 
 // Add honeypot endpoints (these appear legitimate but detect scanners)
 app.use('/api/v1/private', honeypotRoutes);
 app.use('/wp-admin', honeypotRoutes);
 app.use('/admin/config', honeypotRoutes);
 app.use('/phpmyadmin', honeypotRoutes);
+app.use('/admin-login', honeypotRoutes);
 
 // Add advanced detection endpoint
 app.get('/api/analyze/:ip', async (req, res) => {

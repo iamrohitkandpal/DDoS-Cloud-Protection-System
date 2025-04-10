@@ -12,6 +12,17 @@ The DDoS Protection System dashboard provides a comprehensive view of your prote
 4. **Alert Log**: Recent security events and notifications
 5. **System Health**: Status of all system components
 
+## New Dashboard Features
+- **Attack Simulation Mode**: Test protections without real traffic
+- **Compliance Reporting**: Generate PCI-DSS and ISO 27001 reports
+- **API Documentation**: Integrated Swagger UI for REST API
+- **Drill-Down Analysis**: Investigate attack patterns visually
+
+### Adaptive Protection Modes
+1. **Learning Mode**: Baseline traffic pattern analysis
+2. **Shield Mode**: Enhanced protection during festivals/elections
+3. **Maintenance Mode**: Allow list-based access control
+
 ## User Management
 
 ### Adding Users
@@ -72,3 +83,4 @@ The system supports three roles:
   "action": "block",
   "priority": 5
 } 
+```

@@ -17,6 +17,18 @@ The system is designed to protect:
 - Critical infrastructure dashboards
 - State government online services
 
+## New Target Applications
+- Election Commission portals
+- UIDAI/Aadhaar services
+- GSTN interface
+- National Scholarship Portal
+
+## Enhanced Compliance
+- MeitY Guidelines for Government Applications
+- ISO 27001:2022 Certification
+- GDPR Compliance for International Users
+- RBI Guidelines for Financial Systems
+
 ## Unique Challenges
 Indian government websites face specific challenges:
 - High traffic volumes during peak periods (tax filing seasons, exam results)

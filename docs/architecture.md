@@ -37,6 +37,12 @@ The DDoS Protection System consists of the following key components:
   - Configuration interface
   - Report generation
 
+### New Components
+- **Adaptive Protection Engine**: Dynamically adjusts rules based on attack patterns
+- **Threat Intelligence Hub**: Aggregates data from global security feeds
+- **API Gateway**: Manages integration with protected services
+- **Audit Blockchain**: Stores tamper-proof event logs
+
 ## Data Flow
 1. Incoming request reaches the Nginx proxy
 2. Request metadata is captured and sent to the Analysis Engine
@@ -44,6 +50,12 @@ The DDoS Protection System consists of the following key components:
 4. If suspicious, detailed analysis is performed
 5. Results are stored in MongoDB for long-term analysis
 6. Administrators receive alerts through the dashboard
+
+## Enhanced Data Flow
+1. Request processing now includes TLS fingerprint analysis
+2. Machine learning models run in parallel with rule engine
+3. Real-time collaboration with CERT-In's threat database
+4. Automated reporting to NCIIPC for critical incidents
 
 ## Deployment Architecture
 The system can be deployed in multiple configurations:
@@ -74,4 +86,9 @@ The system can be deployed in multiple configurations:
 - Docker containers for consistent deployment
 - Kubernetes for orchestration (in HA setup)
 - AWS/Azure/NIC Cloud for hosting
-- Terraform for infrastructure as code 
+- Terraform for infrastructure as code
+
+### Security Architecture
+- Zero-trust architecture for internal communications
+- Hardware Security Module (HSM) integration for key management
+- FIPS 140-2 compliant cryptographic modules 
