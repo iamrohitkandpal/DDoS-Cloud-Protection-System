@@ -31,18 +31,8 @@ const server = createServer(app);
 // Initialize WebSocket server for real-time alerts
 initializeAlertSystem(server);
 
-// Create Redis client reference to use in health check
-const redis = createClient({
-  username: process.env.REDIS_USERNAME || 'default',
-  password: process.env.REDIS_PASSWORD,
-  socket: {
-    host: process.env.REDIS_HOST,
-    port: parseInt(process.env.REDIS_PORT || '16434')
-  }
-});
-
-// No need to connect, just create the reference
-// We'll check isReady in the health endpoint
+// Import Redis service for health checks
+import redisService from './services/redisService.js';
 
 // Middlewares
 app.use(express.json({ limit: "10kb" }));
@@ -123,7 +113,7 @@ app.get('/health', (req, res) => {
   const health = {
     uptime: process.uptime(),
     timestamp: Date.now(),
-    redis: redis.isReady ? 'connected' : 'disconnected',
+    redis: redisService.isReady() ? 'connected' : 'disconnected',
     mongo: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   };
   
