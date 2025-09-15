@@ -1,0 +1,135 @@
+# ==================================================================
+# Docker Compose for DDoS Protection System with Nginx
+# ==================================================================
+# This configuration sets up nginx as a reverse proxy for the
+# DDoS Protection System using Docker containers
+# ==================================================================
+
+version: '3.8'
+
+services:
+  # ==================================================================
+  # Nginx Reverse Proxy Service
+  # ==================================================================
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: ddos-protection-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Configuration files
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ddos-protection.conf:/etc/nginx/conf.d/default.conf:ro
+      
+      # Static files (frontend build)
+      - ../../frontend/dist:/var/www/ddos-protection/frontend/dist:ro
+      
+      # Logs
+      - nginx-logs:/var/log/nginx
+      
+      # SSL certificates (if using HTTPS)
+      - ./ssl:/etc/ssl/certs:ro
+      
+    depends_on:
+      - backend
+    networks:
+      - ddos-protection-network
+    environment:
+      - NGINX_ENVSUBST_TEMPLATE_SUFFIX=.template
+    labels:
+      - "traefik.enable=false"
+      
+  # ==================================================================
+  # Backend Service (Node.js Application)
+  # ==================================================================
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    container_name: ddos-protection-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"  # Expose for direct access if needed
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      # Logs
+      - backend-logs:/app/logs
+    networks:
+      - ddos-protection-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==================================================================
+  # Redis Service (for rate limiting and caching)
+  # ==================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: ddos-protection-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - ddos-protection-network
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================================================================
+  # MongoDB Service (for data storage)
+  # ==================================================================
+  mongodb:
+    image: mongo:6.0
+    container_name: ddos-protection-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=secure_password_here
+      - MONGO_INITDB_DATABASE=ddos_protection
+    volumes:
+      - mongodb-data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - ddos-protection-network
+    healthcheck:
+      test: ["CMD","mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# ==================================================================
+# Networks
+# ==================================================================
+networks:
+  ddos-protection-network:
+    driver: bridge
+    name: ddos-protection
+
+# ==================================================================
+# Volumes
+# ==================================================================
+volumes:
+  nginx-logs:
+    name: ddos-protection-nginx-logs
+  backend-logs:
+    name: ddos-protection-backend-logs
+  redis-data:
+    name: ddos-protection-redis-data
+  mongodb-data:
+    name: ddos-protection-mongodb-data
